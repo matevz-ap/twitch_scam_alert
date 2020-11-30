@@ -1,6 +1,8 @@
 # Credentials 
 myCredentials.json
 
+#lock
+package-lock.json
 # Logs
 logs
 *.log
