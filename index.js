@@ -4,17 +4,24 @@ const schedule = require('node-schedule');
 const fetch = require("node-fetch");
 const Twit = require('twit');
 
-var json = require('./streamers.json');
+let streamers = require('./streamers.json');
+//require credentials with your personal credentials 
+let credentials = require('./myCredentials.json');
 
+//gameId from which you want to get streamers
+const gameId = "32399";
+//number of top streams
+const number_of_streams = "20";
 //urls for getting data from Twitch
-const data_url = 'https://api.twitch.tv/helix/streams?game_id=32399&first=20';
+const data_url = "https://api.twitch.tv/helix/streams?game_id=" + 
+    gameId + "&first=" + number_of_streams; 
 const follower_url = 'https://api.twitch.tv/helix/users/follows?to_id=<ID>';
 
-var T = new Twit({
-    consumer_key: 'gvqwvFTkP2a91V6wxBxcNCfWi',
-    consumer_secret: 'Tpv66ROJAndhYvKJosymkGzbqM3mUzLwpMhu0V5C8bdv6oq9Xw',
-    access_token: '2765489543-o5fmVKyCWKmMpuRsDz78VKCmFaajd3XbKauudGl',
-    access_token_secret: 'oQSpqXPkMuoDIJcjffbWdGi5cVscTTjYl3fxbWA4VW0ma',
+const T = new Twit({
+    consumer_key: credentials.twitter.consumer_key,
+    consumer_secret: credentials.twitter.consumer_secret,
+    access_token: credentials.twitter.access_token,
+    access_token_secret: credentials.twitter.access_token_secret,
 })
 
 //saves all the scaming streams for the session
@@ -24,21 +31,23 @@ async function getData(url = '') { //gets data from twitch
     let response = await fetch(url, {
         method: 'GET',
         headers: {
-            'client-id': '9f7ey5y14unht69khzr78l0t0dpret', 
-            'Authorization': 'Bearer okts1yk0c5cwjgq5b5k33kdz375osp',
+            'client-id': credentials.twitch.client_id, 
+            'Authorization': credentials.twitch.Authorization,
         }
     });
     let data = await response.json();
     return data;
 }
 
+//loops through top n streams 
 async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
       await callback(array[index]);
     }
 }
 
-function getTime(startTime) { //calculates how long the stream has been onlyne for
+//calculates how long the stream has been onlyne for
+function getTime(startTime) { 
     var d1 = new Date();
     var d2 = new Date(startTime);
     return Math.floor((d1 - d2) / 60e3);
