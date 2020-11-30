@@ -1,10 +1,12 @@
 
-const fetch = require("node-fetch");
-const schedule = require('node-schedule');
-const Twit = require('twit');
 const imageToBase64 = require('image-to-base64');
+const schedule = require('node-schedule');
+const fetch = require("node-fetch");
+const Twit = require('twit');
+
 var json = require('./streamers.json');
 
+//urls for getting data from Twitch
 const data_url = 'https://api.twitch.tv/helix/streams?game_id=32399&first=20';
 const follower_url = 'https://api.twitch.tv/helix/users/follows?to_id=<ID>';
 
@@ -17,11 +19,6 @@ var T = new Twit({
 
 //saves all the scaming streams for the session
 let scammer_list = [];
-
-//Usre ID by Username
-/*getData('https://api.twitch.tv/helix/users?login=s1mple')
-    .then(data => console.log(data))
-    .catch(err => console.log(err));*/
 
 async function getData(url = '') { //gets data from twitch
     let response = await fetch(url, {
@@ -59,6 +56,14 @@ function checkStream(number_of_followers, id) {
     else return false;
 }
 
+//get picture from stream and ad it to Tweet
+function makeTweet(stream) {
+    var imageUrl = (stream.thumbnail_url.replace("{width}", "1280")).replace("{height}", "720");
+    imageToBase64(imageUrl) 
+        .then((response) => {return tweet(stream, response)})
+        .catch((error) => {console.log(error)})
+}
+
 function tweet(stream, image) {
     T.post('media/upload', { media_data: image}, function (err, data, response) {
         var mediaIdStr = data.media_id_string
@@ -77,13 +82,6 @@ function tweet(stream, image) {
             }
         })
     })
-}
-
-function makeTweet(stream) {
-    var imageUrl = (stream.thumbnail_url.replace("{width}", "1280")).replace("{height}", "720");
-    imageToBase64(imageUrl) 
-        .then((response) => {return tweet(stream, response)})
-        .catch((error) => {console.log(error)})
 }
 
 schedule.scheduleJob('*/15 * * * *', function() { //checks the game every 15 min
